@@ -5,6 +5,7 @@ import viteLogo from './assets/vite.svg'
 import './App.css'
 import './utils'
 import { SlotList } from './components/SlotList'
+import { BookingForm } from './components/BookingForm'
 import type { TimeSlot } from './types'
 
 const slots: TimeSlot[] = [
@@ -18,6 +19,7 @@ function App() {
    <main>
     <h1>Booking</h1>
     <SlotList slots={slots} />
+    <BookingForm />
    </main>
   )
 }

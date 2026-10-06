@@ -2,6 +2,9 @@ import { useState } from 'react'
 import type { BookingFormData } from '../types'
 
 type FormErrors = Partial<Record<keyof BookingFormData, string>>
+type BookingFormProps = {
+  selectedTime: string | null
+}
 
 const empty: BookingFormData = {
   name: '',
@@ -18,7 +21,7 @@ function validate(data: BookingFormData): FormErrors {
   return next
 }
 
-export function BookingForm() {
+export function BookingForm({selectedTime}: BookingFormProps) {
   const [form, setForm] = useState<BookingFormData>(empty)
   const [errors, setErrors] = useState<FormErrors>({})
 
@@ -38,6 +41,7 @@ export function BookingForm() {
 
   return (
     <form onSubmit={handleSubmit}>
+      <p>Time: {selectedTime ?? 'not selected'}</p>
       <label>
         Name
         <input value={form.name} onChange={e => update('name', e.target.value)} />

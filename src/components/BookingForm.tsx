@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import type { BookingFormData } from '../types'
 
 type FormErrors = Partial<Record<keyof BookingFormData, string>>
 type BookingFormProps = {
   selectedTime: string | null
+  onBook: (data: BookingFormData) => void
 }
 
 const empty: BookingFormData = {
@@ -18,25 +19,27 @@ function validate(data: BookingFormData): FormErrors {
   const next: FormErrors = {}
   if (!data.name.trim()) next.name = 'Name is required'
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) next.email = 'Enter a valid email'
+  if (!data.time) next.time = 'Pick a time slot'
   return next
 }
 
-export function BookingForm({selectedTime}: BookingFormProps) {
+export function BookingForm({selectedTime, onBook}: BookingFormProps) {
   const [form, setForm] = useState<BookingFormData>(empty)
   const [errors, setErrors] = useState<FormErrors>({})
 
   function update(field: keyof BookingFormData, value: string) {
     const next = { ...form, [field]: value }
     setForm(next)
-    setErrors(validate(next))
+    setErrors(validate({ ...next, time: selectedTime ?? ''}))
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
-    const next = validate(form)
+    const data = {...form, time: selectedTime ?? ''}
+    const next = validate(data)
     setErrors(next)
     if (Object.keys(next).length > 0) return
-    console.log('submit', form)
+    onBook(data)
   }
 
   return (
@@ -56,6 +59,7 @@ export function BookingForm({selectedTime}: BookingFormProps) {
         Note
         <textarea value={form.note} onChange={e => update('note', e.target.value)} />
       </label>
+      <pre>{JSON.stringify(errors)}</pre>
       <button type="submit" disabled={Object.keys(errors).length > 0}>Book</button>
     </form>
   )

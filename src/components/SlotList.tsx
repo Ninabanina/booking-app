@@ -11,6 +11,8 @@ type SlotListProps = {
 export function SlotList({slots, selected, onSelect}: SlotListProps){
     const available = getAvailableSlots(slots)
 
+    if (available.length === 0) return <p>No slots available on this date.</p>
+
     return (
         <ul>
             {available.map(slot => (

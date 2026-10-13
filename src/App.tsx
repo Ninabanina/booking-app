@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import { SlotList } from './components/SlotList'
 import { BookingForm } from './components/BookingForm'
@@ -23,6 +23,20 @@ function App() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const counts = countByStatus(bookings)
   const [date, setDate] = useState('2026-10-12')
+  const [slots, setSlots] = useState<TimeSlot[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    setLoading(true)
+    getSlotsForDate(date).then(data => {
+      if (cancelled) return
+      setSlots(data)
+      setLoading(false)
+    })
+
+    return () => { cancelled = true }
+  }, [date])
 
   function handleBook(data: BookingFormData) {
     const newBooking: Booking = {
@@ -42,8 +56,10 @@ function App() {
     setBookings(prev => prev.map(b => (b.id === id ? { ...b, status: 'confirmed' } : b)))
    }
 
-   function getSlotsForDate(date: string): TimeSlot[] {
-    return slotsByDate[date] ?? []
+   function getSlotsForDate(date: string): Promise<TimeSlot[]> {
+    return new Promise(resolve => {
+      setTimeout(() => resolve(slotsByDate[date] ?? []), 600)
+    })
    }
 
    function handleDateChange(newDate: string) {
@@ -55,7 +71,7 @@ function App() {
    <main>
     <h1>Booking</h1>
     <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} />
-    <SlotList slots={getSlotsForDate(date)} selected={selectedTime} onSelect={setSelectedTime}/>
+    {loading ? <p>Loading…</p> : <SlotList slots={slots} selected={selectedTime} onSelect={setSelectedTime} />}
     <BookingForm selectedTime={selectedTime} onBook={handleBook}/>
     <h2>My bookings</h2>
     <BookingList bookings={bookings} onCancel={handleCancel} onConfirm={handleConfirm}/>

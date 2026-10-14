@@ -25,18 +25,30 @@ function App() {
   const [date, setDate] = useState('2026-10-12')
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    getSlotsForDate(date).then(data => {
-      if (cancelled) return
-      setSlots(data)
-      setLoading(false)
-    })
-
+    
+    async function load() {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await getSlotsForDate(date)
+        if (cancelled) return
+        setSlots(data)
+      } catch (err) {
+        if (cancelled) return
+        setError(err instanceof Error ? err.message: 'Something went wrong')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    
+    load()
     return () => { cancelled = true }
-  }, [date])
+  }, [date, reloadKey])
 
   function handleBook(data: BookingFormData) {
     const newBooking: Booking = {
@@ -57,8 +69,13 @@ function App() {
    }
 
    function getSlotsForDate(date: string): Promise<TimeSlot[]> {
-    return new Promise(resolve => {
-      setTimeout(() => resolve(slotsByDate[date] ?? []), 600)
+    const delay = 200 + Math.random() * 800
+    return new Promise((resolve, reject)=> {
+      setTimeout(() => {
+        if(Math.random() < 0.3) reject(new Error('Network error'))
+        else resolve(slotsByDate[date] ?? [])
+      }, delay)
+
     })
    }
 
@@ -72,6 +89,11 @@ function App() {
     <h1>Booking</h1>
     <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} />
     {loading ? <p>Loading…</p> : <SlotList slots={slots} selected={selectedTime} onSelect={setSelectedTime} />}
+    {error && (
+      <p style={{ color: 'red' }}>
+        {error} <button onClick={() => setReloadKey(k => k + 1)}>Retry</button>
+      </p>
+    )}
     <BookingForm selectedTime={selectedTime} onBook={handleBook}/>
     <h2>My bookings</h2>
     <BookingList bookings={bookings} onCancel={handleCancel} onConfirm={handleConfirm}/>

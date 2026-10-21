@@ -27,4 +27,35 @@ app.get('/api/slots', (req, res) => {
     res.json(slotsByDate[date] ?? [])
 })
 
+type Booking = {
+  id: number
+  name: string
+  email: string
+  date: string
+  time: string
+  note?: string
+  status: 'pending' | 'confirmed' | 'cancelled'
+}
+
+const bookings: Booking[] = []
+app.post('/api/bookings', (req, res) => {
+  const { name, email, date, time, note } = req.body
+  if(!name || !email || !date || !time) {
+    return res.status(400).json({ error: 'name, email, date and time are required'})
+  }
+  const booking: Booking = { id: Date.now(), name, email, date, time, note, status: 'pending' }
+  bookings.push(booking)
+  res.status(201).json(booking)
+})
+
+app.delete('/api/bookings/:id', (req, res) => {
+  const id = Number(req.params.id)
+  const index = bookings.findIndex(b => b.id === id)
+  if (index === -1) return res.status(404).json({ error: 'Booking not found' })
+  bookings.splice(index, 1)
+  res.status(204).end()
+})
+
+app.get('/api/bookings', (req, res) => res.json(bookings))
+
  app.listen(3001, () => console.log('API on http://localhost:3001'))

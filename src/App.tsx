@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { getSlotsForDate } from './api'
+import { getSlotsForDate, createBooking, deleteBooking, getBookings } from './api'
 import { SlotList } from './components/SlotList'
 import { BookingForm } from './components/BookingForm'
 import type { Booking, BookingFormData, TimeSlot } from './types'
@@ -11,11 +11,15 @@ function App() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
   const counts = countByStatus(bookings)
-  const [date, setDate] = '2026-10-12'
+  const [date, setDate] = useState('2026-10-12')
   const [slots, setSlots] = useState<TimeSlot[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+
+  useEffect(() => {
+    getBookings().then(setBookings).catch(console.error)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -39,17 +43,13 @@ function App() {
     return () => { cancelled = true }
   }, [date, reloadKey])
 
-  function handleBook(data: BookingFormData) {
-    const newBooking: Booking = {
-      ...data,
-      id: Date.now(),
-      status: 'pending',
-      date
-    }
-    setBookings([...bookings, newBooking])
+  async function handleBook(data: BookingFormData) {
+    const booking = await createBooking({ ...data, date })
+    setBookings([...bookings, booking])
   }
 
-   function handleCancel(id: number) {
+  async function handleCancel(id: number) {
+    await deleteBooking(id)
     setBookings(prev => prev.filter(b => b.id !== id))
    }
 

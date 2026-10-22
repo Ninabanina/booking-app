@@ -10,6 +10,16 @@ app.use((req, res, next) => {
 })
 
 type TimeSlot = { time: string; available: boolean }
+type Booking = {
+  id: number
+  name: string
+  email: string
+  date: string
+  time: string
+  note?: string
+  status: 'pending' | 'confirmed' | 'cancelled'
+}
+
 const slotsByDate: Record<string, TimeSlot[]> = {
   '2026-10-20': [
     { time: '09:00', available: false },
@@ -26,16 +36,6 @@ app.get('/api/slots', (req, res) => {
     const date = req.query.date as string
     res.json(slotsByDate[date] ?? [])
 })
-
-type Booking = {
-  id: number
-  name: string
-  email: string
-  date: string
-  time: string
-  note?: string
-  status: 'pending' | 'confirmed' | 'cancelled'
-}
 
 const bookings: Booking[] = []
 app.post('/api/bookings', (req, res) => {

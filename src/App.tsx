@@ -16,6 +16,8 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [actionError, setActionError] = useState<string | null>(null)
+
 
   useEffect(() => {
     getBookings().then(setBookings).catch(console.error)
@@ -44,8 +46,13 @@ function App() {
   }, [date, reloadKey])
 
   async function handleBook(data: BookingFormData) {
-    const booking = await createBooking({ ...data, date })
-    setBookings([...bookings, booking])
+    setActionError(null)
+    try {
+      const booking = await createBooking({ ...data, date })
+      setBookings([...bookings, booking])
+    } catch {
+      setActionError('Could not save the booking. Please try again.')
+    }
   }
 
   async function handleCancel(id: number) {
@@ -73,6 +80,7 @@ function App() {
       </p>
     )}
     <BookingForm selectedTime={selectedTime} onBook={handleBook}/>
+    {actionError && <p style={{ color: 'red' }}>{actionError}</p>}
     <h2>My bookings</h2>
     <BookingList bookings={bookings} onCancel={handleCancel} onConfirm={handleConfirm}/>
     <p>Pending: {counts.pending} - Confirmed: {counts.confirmed} - Cancelled: {counts.cancelled} </p>

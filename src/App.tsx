@@ -55,12 +55,12 @@ function App() {
     }
   }
 
-  async function handleCancel(id: number) {
+  async function handleCancel(id: string) {
     await deleteBooking(id)
     setBookings(prev => prev.filter(b => b.id !== id))
    }
 
-   function handleConfirm(id: number) {
+   function handleConfirm(id: string) {
     setBookings(prev => prev.map(b => (b.id === id ? { ...b, status: 'confirmed' } : b)))
    }
 

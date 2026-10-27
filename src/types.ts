@@ -8,7 +8,7 @@ export type BookingFormData = Omit<Booking, 'id' | 'status'>
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled'
 
 export interface Booking {
-    id:number,
+    id:string,
     name:string,
     email:string,
     date:string,

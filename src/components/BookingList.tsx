@@ -2,8 +2,8 @@ import type { Booking } from '../types'
 
 type BookingListProps = {
     bookings: Booking[]
-    onCancel: (id: number) => void
-    onConfirm: (id: number) => void
+    onCancel: (id: string) => void
+    onConfirm: (id: string) => void
 }
 
 export function BookingList({ bookings, onCancel, onConfirm }: BookingListProps) {

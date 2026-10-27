@@ -1,5 +1,7 @@
 import express from 'express'
 import cors from 'cors'
+import { db } from './db.js'
+console.log('Firestore ready:', !!db)
 
 const app = express()
 app.use(cors())
@@ -11,7 +13,7 @@ app.use((req, res, next) => {
 
 type TimeSlot = { time: string; available: boolean }
 type Booking = {
-  id: number
+  id: string
   name: string
   email: string
   date: string
@@ -37,25 +39,28 @@ app.get('/api/slots', (req, res) => {
     res.json(slotsByDate[date] ?? [])
 })
 
-const bookings: Booking[] = []
-app.post('/api/bookings', (req, res) => {
+app.post('/api/bookings', async(req, res) => {
   const { name, email, date, time, note } = req.body
   if(!name || !email || !date || !time) {
     return res.status(400).json({ error: 'name, email, date and time are required'})
   }
-  const booking: Booking = { id: Date.now(), name, email, date, time, note, status: 'pending' }
-  bookings.push(booking)
-  res.status(201).json(booking)
+  const data = { name, email, date, time, note: note ?? '', status: 'pending' }
+  const ref = await db.collection('bookings').add(data)
+  res.status(201).json({ id:ref.id, ...data })
 })
 
-app.delete('/api/bookings/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const index = bookings.findIndex(b => b.id === id)
-  if (index === -1) return res.status(404).json({ error: 'Booking not found' })
-  bookings.splice(index, 1)
+app.delete('/api/bookings/:id', async(req, res) => {
+  const ref = db.collection('bookings').doc(req.params.id)
+  const doc = await ref.get()
+  if (!doc.exists) return res.status(404).json({ error: 'Booking not found' })
+  await ref.delete()
   res.status(204).end()
 })
 
-app.get('/api/bookings', (req, res) => res.json(bookings))
+app.get('/api/bookings', async(req, res) => {
+  const snapshot = await db.collection('bookings').get()
+  const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  res.json(bookings)
+})
 
  app.listen(3001, () => console.log('API on http://localhost:3001'))

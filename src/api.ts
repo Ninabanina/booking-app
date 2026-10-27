@@ -18,7 +18,7 @@ export async function createBooking(data: BookingFormData): Promise<Booking> {
   return res.json()
 }
 
-export async function deleteBooking(id: number): Promise<void> {
+export async function deleteBooking(id: string): Promise<void> {
   const res = await fetch(`${BASE}/bookings/${id}`, { method: 'DELETE'})
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
 }

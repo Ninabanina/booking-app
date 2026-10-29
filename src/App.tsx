@@ -6,6 +6,9 @@ import { BookingForm } from './components/BookingForm'
 import type { Booking, BookingFormData, TimeSlot } from './types'
 import { BookingList } from './components/BookingList'
 import { countByStatus } from './utils'
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth'
+import { auth } from './firebase'
+import { LoginForm } from './components/LoginForm'
 
 function App() {
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
@@ -17,6 +20,7 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [user, setUser] = useState<User | null>(null)
 
 
   useEffect(() => {
@@ -44,6 +48,10 @@ function App() {
     load()
     return () => { cancelled = true }
   }, [date, reloadKey])
+  
+  useEffect(() => {
+    return onAuthStateChanged(auth, setUser)
+  }, [])
 
   async function handleBook(data: BookingFormData) {
     setActionError(null)
@@ -69,9 +77,12 @@ function App() {
     setSelectedTime(null)
    }
 
+   if (!user) return <LoginForm />
+
   return (
    <main>
     <h1>Booking</h1>
+    <p>Logged in as {user.email} <button onClick={() => signOut(auth)}>Log out</button></p>
     <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} />
     {loading ? <p>Loading…</p> : <SlotList slots={slots} selected={selectedTime} onSelect={setSelectedTime} />}
     {error && (

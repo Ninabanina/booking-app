@@ -2,10 +2,27 @@ import express from 'express'
 import cors from 'cors'
 import { db } from './db.js'
 console.log('Firestore ready:', !!db)
+import { getAuth } from 'firebase-admin/auth'
+import type { Request, Response, NextFunction } from 'express'
 
 const app = express()
 app.use(cors())
 app.use(express.json())
+
+async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const header = req.headers.authorization
+  if (!header?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Not logged in' })
+  }
+  try {
+    const decoded = await getAuth().verifyIdToken(header.slice(7))
+    res.locals.uid = decoded.uid
+    next()
+  } catch {
+    res.status(401).json({ error: 'Invalid token' })
+  }
+}
+
 app.use((req, res, next) => {
   console.log(req.method, req.url)
   next()
@@ -39,26 +56,27 @@ app.get('/api/slots', (req, res) => {
     res.json(slotsByDate[date] ?? [])
 })
 
-app.post('/api/bookings', async(req, res) => {
+app.post('/api/bookings', requireAuth, async(req, res) => {
   const { name, email, date, time, note } = req.body
   if(!name || !email || !date || !time) {
     return res.status(400).json({ error: 'name, email, date and time are required'})
   }
-  const data = { name, email, date, time, note: note ?? '', status: 'pending' }
+  const data = { name, email, date, time, note: note ?? '', status: 'pending', uid: res.locals.uid }
   const ref = await db.collection('bookings').add(data)
   res.status(201).json({ id:ref.id, ...data })
 })
 
-app.delete('/api/bookings/:id', async(req, res) => {
-  const ref = db.collection('bookings').doc(req.params.id)
+app.delete('/api/bookings/:id', requireAuth, async(req, res) => {
+  const ref = db.collection('bookings').doc(String(req.params.id))
   const doc = await ref.get()
   if (!doc.exists) return res.status(404).json({ error: 'Booking not found' })
+  if (doc.data()?.uid !== res.locals.uid) return res.status(403).json({ error: 'Not your booking' })
   await ref.delete()
   res.status(204).end()
 })
 
-app.get('/api/bookings', async(req, res) => {
-  const snapshot = await db.collection('bookings').get()
+app.get('/api/bookings', requireAuth, async(req, res) => {
+  const snapshot = await db.collection('bookings').where('uid', '==', res.locals.uid).get()
   const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
   res.json(bookings)
 })

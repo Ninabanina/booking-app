@@ -83,7 +83,7 @@ function App() {
    <main>
     <h1>Booking</h1>
     <p>Logged in as {user.email} <button onClick={() => signOut(auth)}>Log out</button></p>
-    <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} />
+    <label>Date <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} /></label>
     {loading ? <p>Loading…</p> : <SlotList slots={slots} selected={selectedTime} onSelect={setSelectedTime} />}
     {error && (
       <p style={{ color: 'red' }}>

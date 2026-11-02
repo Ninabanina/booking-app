@@ -35,8 +35,7 @@ export function BookingForm({selectedTime, onBook}: BookingFormProps) {
   }, [selectedTime])
 
   function update(field: keyof BookingFormData, value: string) {
-    const next = { ...form, [field]: value }
-    setForm(next)
+    setForm(prev => ({ ...prev, [field]: value }))
     setTouched(true)
   }
 

@@ -29,15 +29,6 @@ app.use((req, res, next) => {
 })
 
 type TimeSlot = { time: string; available: boolean }
-type Booking = {
-  id: string
-  name: string
-  email: string
-  date: string
-  time: string
-  note?: string
-  status: 'pending' | 'confirmed' | 'cancelled'
-}
 
 const slotsByDate: Record<string, TimeSlot[]> = {
   '2026-10-20': [

@@ -1,4 +1,4 @@
-import { useEffect, useState, type SubmitEvent } from 'react'
+import { useState, type SubmitEvent } from 'react'
 import type { BookingFormData } from '../types'
 
 type FormErrors = Partial<Record<keyof BookingFormData, string>>
@@ -23,16 +23,13 @@ function validate(data: BookingFormData): FormErrors {
   return next
 }
 
-export function BookingForm({selectedTime, onBook}: BookingFormProps) {
+export function BookingForm({ selectedTime, onBook }: BookingFormProps) {
   const [form, setForm] = useState<BookingFormData>(empty)
   const [touched, setTouched] = useState(false)
 
-  const errors = validate(form)
-  const hasErros = Object.keys(errors).length > 0
-
-  useEffect(() => {
-    setForm(prev => ({ ...prev, time: selectedTime ?? ''}))
-  }, [selectedTime])
+  const data = { ...form, time: selectedTime ?? '' }
+  const errors = validate(data)
+  const hasErrors = Object.keys(errors).length > 0
 
   function update(field: keyof BookingFormData, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -41,10 +38,11 @@ export function BookingForm({selectedTime, onBook}: BookingFormProps) {
 
   function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
-    const next = validate(form)
     setTouched(true)
-    if (Object.keys(next).length > 0) return
-    onBook(form)
+    if (hasErrors) return
+    onBook(data)
+    setForm(empty)
+    setTouched(false)
   }
 
   return (
@@ -65,7 +63,7 @@ export function BookingForm({selectedTime, onBook}: BookingFormProps) {
         Note
         <textarea value={form.note} onChange={e => update('note', e.target.value)} />
       </label>
-      <button type="submit" disabled={touched && hasErros}>Book</button>
+      <button type="submit" disabled={touched && hasErrors}>Book</button>
     </form>
   )
 }

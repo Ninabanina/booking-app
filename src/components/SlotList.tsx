@@ -1,6 +1,5 @@
 import type { TimeSlot } from "../types";
 import { getAvailableSlots } from "../utils";
-import { useState } from "react";
 
 type SlotListProps = {
     slots: TimeSlot[]

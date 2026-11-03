@@ -50,6 +50,7 @@ export function BookingForm({selectedTime, onBook}: BookingFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       <p>Time: {selectedTime ?? 'not selected'}</p>
+      {touched && errors.time && <span style={{ color: 'red' }}>{errors.time}</span>}
       <label>
         Name
         <input value={form.name} onChange={e => update('name', e.target.value)} />
@@ -64,7 +65,6 @@ export function BookingForm({selectedTime, onBook}: BookingFormProps) {
         Note
         <textarea value={form.note} onChange={e => update('note', e.target.value)} />
       </label>
-      <pre>{JSON.stringify(errors)}</pre>
       <button type="submit" disabled={touched && hasErros}>Book</button>
     </form>
   )

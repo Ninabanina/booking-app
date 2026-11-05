@@ -1,4 +1,4 @@
-import { useState, type SubmitEvent } from 'react'
+import { useState, useRef, type SubmitEvent } from 'react'
 import type { BookingFormData } from '../types'
 
 type FormErrors = Partial<Record<keyof BookingFormData, string>>
@@ -31,6 +31,9 @@ export function BookingForm({ selectedTime, onBook }: BookingFormProps) {
   const errors = validate(data)
   const hasErrors = Object.keys(errors).length > 0
 
+  const nameRef = useRef<HTMLInputElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
+
   function update(field: keyof BookingFormData, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
     setTouched(true)
@@ -39,7 +42,11 @@ export function BookingForm({ selectedTime, onBook }: BookingFormProps) {
   function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
     setTouched(true)
-    if (hasErrors) return
+    if (hasErrors) {
+      if (errors.name) nameRef.current?.focus()
+      else if (errors.email) emailRef.current?.focus()
+      return
+    }
     onBook(data)
     setForm(empty)
     setTouched(false)
@@ -48,16 +55,16 @@ export function BookingForm({ selectedTime, onBook }: BookingFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       <p>Time: {selectedTime ?? 'not selected'}</p>
-      {touched && errors.time && <span style={{ color: 'red' }}>{errors.time}</span>}
+      {touched && errors.time && <span id="time-error" role="alert" style={{ color: 'red' }}>{errors.time}</span>}
       <label>
         Name
-        <input value={form.name} onChange={e => update('name', e.target.value)} />
-        {touched && errors.name && <span style={{ color: 'red' }}>{errors.name}</span>}
+        <input value={form.name} onChange={e => update('name', e.target.value)} aria-invalid={touched && !!errors.name} aria-describedby="name-error"/>
+        {touched && errors.name && <span id="name-error" role="alert" style={{ color: 'red' }}>{errors.name}</span>}
       </label>
       <label>
         Email
-        <input type="email" value={form.email} onChange={e => update('email', e.target.value)} />
-        {touched && errors.email && <span style={{ color: 'red' }}>{errors.email}</span>}
+        <input type="email" value={form.email} onChange={e => update('email', e.target.value)} aria-invalid={touched && !!errors.email} aria-describedby="email-error"/>
+        {touched && errors.email && <span id="email-error" role="alert" style={{ color: 'red' }}>{errors.email}</span>}
       </label>
       <label>
         Note

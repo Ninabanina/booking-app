@@ -84,7 +84,7 @@ function App() {
     <h1>Booking</h1>
     <p>Logged in as {user.email} <button onClick={() => signOut(auth)}>Log out</button></p>
     <label>Date <input type="date" value={date} onChange={e => handleDateChange(e.target.value)} /></label>
-    {loading ? <p>Loading…</p> : <SlotList slots={slots} selected={selectedTime} onSelect={setSelectedTime} />}
+    {loading ? <p role="status">Loading…</p> : <SlotList slots={slots} selected={selectedTime} onSelect={setSelectedTime} />}
     {error && (
       <p style={{ color: 'red' }}>
         {error} <button onClick={() => setReloadKey(k => k + 1)}>Retry</button>

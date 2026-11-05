@@ -13,10 +13,10 @@ export function SlotList({slots, selected, onSelect}: SlotListProps){
     if (available.length === 0) return <p>No slots available on this date.</p>
 
     return (
-        <ul>
+        <ul aria-labelledby="time-label">
             {available.map(slot => (
                 <li key={slot.time}>
-                    <button onClick={() => onSelect(slot.time)}
+                    <button onClick={() => onSelect(slot.time)} aria-pressed={selected === slot.time}
                             style={{ fontWeight: selected === slot.time? 'bold' : 'normal'}}
                     >
                         {slot.time}

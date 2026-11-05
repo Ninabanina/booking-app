@@ -1,4 +1,4 @@
-import type { TimeSlot, Booking, BookingStatus } from "./types";
+import type { TimeSlot, Booking, BookingStatus, BookingFormData } from "./types";
 
 export function getAvailableSlots(slots: TimeSlot[]): TimeSlot[]{
     return slots.filter(slot => slot.available === true)
@@ -32,3 +32,13 @@ export function forEachConfirmed(bookings: Booking[], callback: OnSelect): void 
 export function findBy<T>(items: T[], predicate: (item: T) => boolean): T | undefined {
   return items.find(predicate)
 } 
+
+export type FormErrors = Partial<Record<keyof BookingFormData, string>>
+
+export function validate(data: BookingFormData): FormErrors {
+  const next: FormErrors = {}
+  if (!data.name.trim()) next.name = 'Name is required'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) next.email = 'Enter a valid email'
+  if (!data.time) next.time = 'Pick a time slot'
+  return next
+}

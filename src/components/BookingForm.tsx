@@ -1,7 +1,7 @@
 import { useState, useRef, type SubmitEvent } from 'react'
 import type { BookingFormData } from '../types'
+import { validate } from '../utils'
 
-type FormErrors = Partial<Record<keyof BookingFormData, string>>
 type BookingFormProps = {
   selectedTime: string | null
   onBook: (data: BookingFormData) => void
@@ -13,14 +13,6 @@ const empty: BookingFormData = {
   date: '',
   time: '',
   note: '',
-}
-
-function validate(data: BookingFormData): FormErrors {
-  const next: FormErrors = {}
-  if (!data.name.trim()) next.name = 'Name is required'
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) next.email = 'Enter a valid email'
-  if (!data.time) next.time = 'Pick a time slot'
-  return next
 }
 
 export function BookingForm({ selectedTime, onBook }: BookingFormProps) {

@@ -1,13 +1,13 @@
 import express from 'express'
 import cors from 'cors'
 import { db } from './db.js'
-console.log('Firestore ready:', !!db)
 import { getAuth } from 'firebase-admin/auth'
 import type { Request, Response, NextFunction } from 'express'
 
 const app = express()
-app.use(cors())
+app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173' }))
 app.use(express.json())
+
 
 async function requireAuth(req: Request, res: Response, next: NextFunction) {
   const header = req.headers.authorization
@@ -72,4 +72,5 @@ app.get('/api/bookings', requireAuth, async(req, res) => {
   res.json(bookings)
 })
 
- app.listen(3001, () => console.log('API on http://localhost:3001'))
+ const PORT = process.env.PORT ?? 3001
+app.listen(PORT, () => console.log(`API on ${PORT}`))

@@ -1,7 +1,7 @@
 import type { Booking, BookingFormData, TimeSlot } from './types'
 import { auth } from './firebase'
 
-const BASE = 'http://localhost:3001/api'
+const BASE = `${import.meta.env.VITE_API_URL ?? 'http://localhost:3001'}/api`
 
 export async function getSlotsForDate(date: string): Promise<TimeSlot[]> {
   const res = await fetch(`${BASE}/slots?date=${date}`)

@@ -21,11 +21,13 @@ function App() {
   const [reloadKey, setReloadKey] = useState(0)
   const [actionError, setActionError] = useState<string | null>(null)
   const [user, setUser] = useState<User | null>(null)
+  const [authReady, setAuthReady] = useState(false)
 
 
   useEffect(() => {
+    if (!user) return
     getBookings().then(setBookings).catch(console.error)
-  }, [])
+  }, [user])
 
   useEffect(() => {
     let cancelled = false
@@ -50,14 +52,14 @@ function App() {
   }, [date, reloadKey])
   
   useEffect(() => {
-    return onAuthStateChanged(auth, setUser)
+    return onAuthStateChanged(auth, u => { setUser(u); setAuthReady(true) })
   }, [])
 
   async function handleBook(data: BookingFormData) {
     setActionError(null)
     try {
       const booking = await createBooking({ ...data, date })
-      setBookings([...bookings, booking])
+      setBookings(prev => [...prev, booking])
     } catch {
       setActionError('Could not save the booking. Please try again.')
     }
@@ -77,7 +79,8 @@ function App() {
     setSelectedTime(null)
    }
 
-   if (!user) return <LoginForm />
+   if (!authReady) return <main><h1>Booking</h1><p role="status">Loading…</p></main>
+   if (!user) return <main><LoginForm /></main>
 
   return (
    <main>
